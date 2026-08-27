@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>REGEX-X | TOC Interactive Simulator</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080b14;color:#e8ecf7;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer}
+.app{display:flex;min-height:100vh}.side{width:240px;background:#0d1120;border-right:1px solid #20273a;padding:22px 14px;position:fixed;height:100vh}
+.logo{font-size:22px;font-weight:800;letter-spacing:1px}.sub{font-size:11px;color:#7e8aa5;margin:4px 0 25px}
+.nav button{width:100%;background:none;border:0;color:#aeb8cc;text-align:left;padding:12px;border-radius:10px;margin:3px 0}.nav button.active,.nav button:hover{background:#171e31;color:#fff}
+.main{margin-left:240px;width:calc(100% - 240px);padding:28px;max-width:1500px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+h1{font-size:28px;margin:0}.muted{color:#8792aa}.pill{border:1px solid #2a3349;border-radius:999px;padding:7px 12px;color:#aeb8cc;font-size:12px}
+.card{background:#0f1422;border:1px solid #20283b;border-radius:16px;padding:20px;margin-bottom:18px}.grid{display:grid;gap:16px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#78849e;margin-bottom:8px}.value{font-size:18px;font-weight:700}
+input,textarea,select{width:100%;background:#090d17;color:#eef2ff;border:1px solid #2b344a;border-radius:10px;padding:12px;outline:none}textarea{min-height:150px;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:#6977ff}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.btn{background:#171f33;color:#eaf0ff;border:1px solid #303b55;border-radius:9px;padding:10px 15px}.btn.primary{background:#5965ee;border-color:#5965ee}.btn:hover{filter:brightness(1.12)}
+.chars{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px}.ch{min-width:28px;height:36px;padding:0 7px;display:flex;align-items:center;justify-content:center;background:#171d2c;border:1px solid #29334a;border-radius:6px;font-family:monospace}.ch.current{background:#5965ee;border-color:#8790ff;color:#fff;transform:translateY(-2px)}.ch.ok{border-color:#2b8567}
+.state-wrap{overflow:auto;padding:10px}.dfa{min-width:800px;height:250px;position:relative}.state{position:absolute;width:96px;height:96px;border:2px solid #39445e;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#101728;font-weight:700;transition:.25s}.state small{font-size:9px;color:#8490a9;font-weight:500}.state.current{border-color:#7b84ff;box-shadow:0 0 25px #5965ee88;background:#1a2040}.state.accept{border:3px double #39c895}.state.reject{border-color:#e45b72}
+.line{position:absolute;height:2px;background:#39445e;transform-origin:left center}.arrow{position:absolute;font-size:11px;color:#8995ad;background:#0f1422;padding:2px 5px}
+.status{padding:13px;border-radius:10px;background:#111827;border:1px solid #283249}.good{color:#42d19f}.bad{color:#ff6d83}.warn{color:#ffc76a}
+.result{font-size:25px;font-weight:800;margin-top:8px}.token{display:inline-block;padding:6px 9px;margin:3px;background:#171e31;border:1px solid #2b3550;border-radius:7px;font-family:monospace}.token.sel{border-color:#7b84ff;background:#202750}
+table{width:100%;border-collapse:collapse}th,td{padding:10px;text-align:left;border-bottom:1px solid #20283a;font-size:13px}th{color:#8792aa;font-size:11px;text-transform:uppercase}.activeRow{background:#171f34}
+.pipeline{display:flex;gap:8px;align-items:center;overflow:auto}.pipe{min-width:130px;text-align:center;padding:16px 10px;background:#131a2b;border:1px solid #29334a;border-radius:12px}.arrowPipe{color:#6876ee}
+.stat{padding:17px;background:#111827;border:1px solid #242e43;border-radius:12px}.stat b{font-size:25px;display:block}.stat span{font-size:11px;color:#7e8aa5;text-transform:uppercase}
+.highlight{background:#303b68;border-radius:4px;padding:2px 3px}.log{font-family:monospace;font-size:13px;line-height:1.8;background:#080c14;padding:15px;border-radius:10px;white-space:pre-wrap}.alert{border-left:4px solid #e45b72;padding:12px;background:#25151d;border-radius:8px}
+.url-dfa{min-width:900px;min-height:330px;position:relative;background:#090d17;border-radius:12px;padding:18px;overflow:auto}
+.url-node{position:absolute;min-width:78px;height:54px;padding:5px 9px;border:1px solid #39445e;border-radius:12px;background:#101728;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:.2s;z-index:2}
+.url-node small{font-size:8px;color:#8490a9;font-weight:500;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.url-node.active{border-color:#7b84ff;box-shadow:0 0 22px #5965ee88;background:#1a2040}
+.url-node.accept{border-color:#39c895}
+.url-edge{position:absolute;height:2px;background:#39445e;transform-origin:left center;z-index:1}
+.url-edge-label{position:absolute;font-size:9px;color:#8d99b0;background:#090d17;padding:1px 4px;z-index:3}
+.hide{display:none}@media(max-width:850px){.side{width:72px}.logo{font-size:14px}.sub,.nav span{display:none}.main{margin-left:72px;width:calc(100% - 72px);padding:16px}.g2,.g3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="logo">REGEX-X</div><div class="sub">INTERACTIVE AUTOMATA LAB</div>
+  <div class="nav">
+    <button class="active" onclick="show('overview',this)">◈ <span>Overview</span></button>
+    <button onclick="show('lab',this)">⌘ <span>Regex Lab</span></button>
+    <button onclick="show('visual',this)">◉ <span>Regex Visualizer</span></button>
+    <button onclick="show('extract',this)">⌕ <span>Extraction Lab</span></button>
+    <button onclick="show('security',this)">⚠ <span>Security Analyzer</span></button>
+    <button onclick="show('url',this)">⌁ <span>Suspicious URLs</span></button>
+    <button onclick="show('toc',this)">∑ <span>TOC Explorer</span></button>
+  </div>
+</aside>
+<main class="main">
+<div class="top"><div><div class="muted" id="crumb">Overview</div><h1 id="title">Regular Expressions, made visible.</h1></div><button class="btn" onclick="presentation()">Presentation Mode</button></div>
+
+<section id="overview">
+<div class="card"><div class="label">Full simulation pipeline</div><div class="pipeline">
+<div class="pipe">Character Set</div><div class="arrowPipe">→</div><div class="pipe">Regex</div><div class="arrowPipe">→</div><div class="pipe">Matching</div><div class="arrowPipe">→</div><div class="pipe">Extraction</div><div class="arrowPipe">→</div><div class="pipe">Validation</div><div class="arrowPipe">→</div><div class="pipe">Security</div>
+</div></div>
+<div class="grid g3">
+<div class="card"><div class="label">01</div><div class="value">Regex Lab</div><p class="muted">Character set, repetition, structure and extension.</p><button class="btn primary" onclick="goto('lab')">Open Lab</button></div>
+<div class="card"><div class="label">02</div><div class="value">Regex Visualizer</div><p class="muted">Watch an input string move through an automaton.</p><button class="btn primary" onclick="goto('visual')">Start Simulation</button></div>
+<div class="card"><div class="label">03</div><div class="value">Extraction Lab</div><p class="muted">Extract emails, phones and IPv4 addresses from text.</p><button class="btn primary" onclick="goto('extract')">Scan Text</button></div>
+<div class="card"><div class="label">04</div><div class="value">Security Analyzer</div><p class="muted">Parse firewall logs and detect repeated failed logins.</p><button class="btn primary" onclick="goto('security')">Analyze Logs</button></div>
+<div class="card"><div class="label">05</div><div class="value">TOC Explorer</div><p class="muted">Connect regex notation to formal language concepts.</p><button class="btn primary" onclick="goto('toc')">Explore TOC</button></div>
+<div class="card"><div class="label">IE Demo</div><div class="value">One engine, many patterns</div><p class="muted">The same interactive processor demonstrates email, phone, IPv4 and log patterns.</p></div>
+</div>
+</section>
+
+<section id="lab" class="hide">
+<div class="card"><div class="label">Educational email pattern</div><div class="grid g2">
+<div><h2>Email Pattern & Character Set</h2><p class="muted">Use the pattern to understand the local part, delimiter, domain and extension.</p><input id="labInput" value="rahul.sharma23@gmail.com"><div class="row" style="margin-top:10px"><button class="btn primary" onclick="labCheck()">Test Pattern</button><button class="btn" onclick="setLab('rahul+college@gmail.com')">Example</button></div></div>
+<div><div class="label">Regex</div><div class="token">[A-Za-z0-9._%+-]+</div><div class="token">@</div><div class="token">[A-Za-z0-9.-]+</div><div class="token">\.</div><div class="token">[A-Za-z]{2,}</div><div id="labResult" class="status" style="margin-top:15px">Enter a string and test it.</div></div>
+</div></div>
+<div class="grid g2"><div class="card"><div class="label">Character set</div><div class="value">[A-Z a-z 0-9 . _ % + - @]</div><div class="chars" id="charset"></div></div>
+<div class="card"><div class="label">What each component means</div><table><tr><td><code>[A-Za-z]</code></td><td>Upper/lowercase letters</td></tr><tr><td><code>[0-9]</code></td><td>Digits</td></tr><tr><td><code>+</code></td><td>One or more occurrences</td></tr><tr><td><code>@</code></td><td>Email delimiter</td></tr><tr><td><code>\.</code></td><td>Literal dot</td></tr><tr><td><code>{2,}</code></td><td>At least two characters</td></tr></table></div></div>
+</section>
+
+<section id="visual" class="hide">
+<div class="card"><div class="label">Live pattern processor</div><div class="grid g2">
+<div><select id="pattern" onchange="patternChanged()"><option value="email">Email Pattern</option><option value="phone">Phone Pattern</option><option value="ip">IPv4 Pattern</option><option value="log">Firewall Log Pattern</option></select><input id="simInput" style="margin-top:10px" value="rahul.sharma23@gmail.com"><div class="row" style="margin-top:10px"><button class="btn primary" onclick="step()">Step</button><button class="btn" onclick="autoRun()">Auto Run</button><button class="btn" onclick="pauseRun()">Pause</button><button class="btn" onclick="resetSim()">Reset</button></div></div>
+<div><div class="label">Current processing</div><div class="grid g2"><div class="status"><span class="muted">Character</span><div id="curChar" class="value">—</div></div><div class="status"><span class="muted">Category</span><div id="curCat" class="value">—</div></div><div class="status"><span class="muted">Transition</span><div id="transition" class="value">q0 → q0</div></div><div class="status"><span class="muted">Step</span><div id="stepNo" class="value">0 / 0</div></div></div></div>
+</div></div>
+<div class="card"><div class="label">Input stream</div><div id="stream" class="chars"></div></div>
+<div class="card"><div class="label">DFA state visualization</div><div class="state-wrap"><div class="dfa" id="dfa"></div></div><div id="explain" class="status">Press Step to begin character-by-character processing.</div></div>
+<div class="card"><div class="label">Result</div><div id="simResult" class="result muted">WAITING</div></div>
+</section>
+
+<section id="extract" class="hide">
+<div class="card"><div class="label">Pattern extraction</div><textarea id="rawText">Contact Rahul at rahul.sharma23@gmail.com.
+Call +91-9876543210.
+Server: 192.168.1.25.</textarea><div class="row" style="margin-top:10px"><button class="btn primary" onclick="extract()">Scan Text</button><button class="btn" onclick="loadRaw()">Load Sample</button></div></div>
+<div id="extractResults" class="grid g3"></div>
+<div class="card"><div class="label">Highlighted source</div><div id="highlighted" class="log">Press Scan Text.</div></div>
+</section>
+
+<section id="security" class="hide">
+<div class="card"><div class="label">Firewall / security log analyzer</div><textarea id="logs">[12:31:04] FAILED LOGIN from 192.168.1.25
+[12:31:09] FAILED LOGIN from 192.168.1.25
+[12:31:12] SUCCESS LOGIN from 192.168.1.25
+[12:32:01] FAILED LOGIN from 10.0.0.8
+[12:32:05] FAILED LOGIN from 10.0.0.8
+[12:32:07] FAILED LOGIN from 10.0.0.8
+[12:32:09] FAILED LOGIN from 10.0.0.8
+[12:32:11] FAILED LOGIN from 10.0.0.8</textarea><div class="row" style="margin-top:10px"><button class="btn primary" onclick="analyzeLogs()">Analyze</button><button class="btn" onclick="loadLogs()">Load Sample</button></div></div>
+<div id="stats" class="grid g3"></div><div id="alerts"></div><div class="card"><div class="label">Parsed events</div><div id="parsed"></div></div>
+</section>
+
+<section id="url" class="hide">
+<div class="card">
+<div class="label">DFA-based keyword detection</div>
+<h2>Suspicious URL Detection</h2>
+<p class="muted">Add suspicious keywords, generate one combined DFA, then execute the DFA over a URL character-by-character.</p>
+<div class="grid g2">
+<div>
+<div class="label">Suspicious keywords</div>
+<div class="row"><input id="urlKeywordInput" placeholder="e.g. login"><button class="btn primary" onclick="addURLKeyword()">Add Keyword</button></div>
+<div id="urlKeywords" class="chars" style="margin-top:10px"></div>
+<div class="row" style="margin-top:12px"><button class="btn primary" onclick="generateURLDFA()">Generate DFA</button><button class="btn" onclick="loadURLKeywords()">Load Sample</button><button class="btn" onclick="clearURLKeywords()">Clear</button></div>
+<div id="urlDFAStatus" class="status" style="margin-top:12px">Add at least one keyword and click Generate DFA.</div>
+</div>
+<div>
+<div class="label">How it works</div>
+<div class="pipeline" style="flex-wrap:wrap"><div class="pipe">Keywords</div><div class="arrowPipe">→</div><div class="pipe">Combined DFA</div><div class="arrowPipe">→</div><div class="pipe">URL Stream</div><div class="arrowPipe">→</div><div class="pipe">Detect</div></div>
+<p class="muted" style="margin-top:12px">One DFA is generated from all entered keywords using a prefix automaton with failure transitions.</p>
+</div>
+</div>
+</div>
+
+<div id="urlDFASection" class="card hide">
+<div class="label">Generated DFA</div>
+<div class="state-wrap"><div id="urlDFA" class="url-dfa"></div></div>
+<div id="urlDFASummary" class="status">No DFA generated.</div>
+</div>
+
+<div id="urlCheckSection" class="card hide">
+<div class="label">URL scanner</div>
+<div class="row"><input id="urlInput" value="https://secure-example.com/login?verify=password"><button class="btn primary" onclick="checkSuspiciousURL()">Check URL</button><button class="btn" onclick="loadSuspiciousURL()">Sample</button><button class="btn" onclick="resetURLExecution()">Reset</button></div>
+<div class="chars" id="urlStream" style="margin-top:15px"></div>
+<div class="grid g3" style="margin-top:15px">
+<div class="status"><span class="muted">Current Character</span><div id="urlCurrentChar" class="value">—</div></div>
+<div class="status"><span class="muted">DFA State</span><div id="urlCurrentState" class="value">q0</div></div>
+<div class="status"><span class="muted">Step</span><div id="urlStep" class="value">0 / 0</div></div>
+</div>
+<div class="row" style="margin-top:12px"><button class="btn primary" onclick="urlStepOnce()">Step</button><button class="btn" onclick="urlAutoRun()">Auto Run</button><button class="btn" onclick="urlPauseRun()">Pause</button></div>
+<div id="urlExecution" class="status" style="margin-top:12px">Press Step or Check URL to execute the generated DFA.</div>
+<div id="urlResult" class="result muted">WAITING</div>
+</div>
+</section>
+
+<section id="toc" class="hide">
+<div class="card"><div class="label">Formal foundation</div><h2>Finite Automaton & Regular Language</h2><div class="grid g2"><div><div class="value">M = (Q, Σ, δ, q₀, F)</div><table><tr><td>Q</td><td>Set of states</td></tr><tr><td>Σ</td><td>Input alphabet</td></tr><tr><td>δ</td><td>Transition function</td></tr><tr><td>q₀</td><td>Initial state</td></tr><tr><td>F</td><td>Accepting states</td></tr></table></div><div class="status"><b>Core idea</b><p class="muted">A regular expression describes a regular language. A finite automaton can recognize strings belonging to that language. REGEX-X makes that recognition process visible.</p></div></div></div>
+<div class="grid g3"><div class="card"><div class="value">Alphabet</div><p class="muted">A finite set of symbols used to construct strings.</p></div><div class="card"><div class="value">Character Set</div><p class="muted">A defined group of symbols allowed by a pattern.</p></div><div class="card"><div class="value">Repetition</div><p class="muted">+, *, and {m,n} express repeated occurrences.</p></div><div class="card"><div class="value">Concatenation</div><p class="muted">Patterns placed next to each other form a sequence.</p></div><div class="card"><div class="value">Alternation</div><p class="muted">The | operator represents a choice between alternatives.</p></div><div class="card"><div class="value">Regular Language</div><p class="muted">A language describable by a regular expression and recognizable by a finite automaton.</p></div></div>
+</section>
+</main></div>
+
+<script>
+const sections=['overview','lab','visual','extract','security','url','toc'];
+const titles={overview:['Overview','Regular Expressions, made visible.'],lab:['Regex Lab','Email pattern, character set and structure.'],visual:['Regex Visualizer','Watch pattern processing happen character-by-character.'],extract:['Extraction Lab','Find structured information inside raw text.'],security:['Security Analyzer','Parse logs and detect repeated failed logins.'],url:['Suspicious URL Detection','Build one DFA from multiple suspicious keywords and execute it over URLs.'],toc:['TOC Explorer','Connect the simulator to formal language theory.']};
+function show(id,btn){sections.forEach(x=>document.getElementById(x).classList.toggle('hide',x!==id));document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');document.getElementById('crumb').textContent=titles[id][0];document.getElementById('title').textContent=titles[id][1]}
+function goto(id){const b=[...document.querySelectorAll('.nav button')].find(x=>x.getAttribute('onclick')?.includes("'"+id+"'"));show(id,b)}
+function presentation(){document.body.classList.toggle('presentation');document.querySelector('.side').classList.toggle('hide');document.querySelector('.main').style.marginLeft=document.querySelector('.side').classList.contains('hide')?'0':'240px';document.querySelector('.main').style.width=document.querySelector('.side').classList.contains('hide')?'100%':'calc(100% - 240px)'}
+const emailRe=/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+function setLab(v){document.getElementById('labInput').value=v;labCheck()}
+function labCheck(){const v=document.getElementById('labInput').value.trim(),ok=emailRe.test(v);document.getElementById('labResult').innerHTML=ok?'<span class="good">✓ MATCH</span><br>String matches the educational email pattern.':'<span class="bad">✗ NO MATCH</span><br>String does not match the educational email pattern.'}
+function buildCharset(){let s='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._%+-@';document.getElementById('charset').innerHTML=[...s].map(c=>`<span class="ch">${c}</span>`).join('')}
+buildCharset();
+
+let idx=0,timer=null,mode='email',state='q0',history=[];
+const defs={
+email:{states:[['q0','START',70,75],['q1','LOCAL',230,75],['q2','DOMAIN',390,75],['q3','DOT',550,75],['q4','EXTENSION',710,75],['qAccept','ACCEPT',710,185],['qReject','REJECT',390,185]],sample:'rahul.sharma23@gmail.com'},
+phone:{states:[['q0','START',70,75],['q1','PHONE',280,75],['qAccept','ACCEPT',520,75],['qReject','REJECT',520,185]],sample:'+91-9876543210'},
+ip:{states:[['q0','START',70,75],['q1','OCTET',280,75],['q2','DOT',450,75],['q3','OCTET',620,75],['qAccept','VALID',620,185],['qReject','INVALID',450,185]],sample:'192.168.1.25'},
+log:{states:[['q0','START',70,75],['q1','TIMESTAMP',280,75],['q2','EVENT',480,75],['q3','IP',680,75],['qAccept','PARSED',680,185],['qReject','REJECT',480,185]],sample:'[12:31:04] FAILED LOGIN from 192.168.1.25'}
+};
+function patternChanged(){mode=document.getElementById('pattern').value;document.getElementById('simInput').value=defs[mode].sample;resetSim()}
+function buildDfa(){let d=document.getElementById('dfa');d.innerHTML='';defs[mode].states.forEach(([id,name,x,y])=>{let e=document.createElement('div');e.className='state '+(id==='qAccept'?'accept ':'')+(id==='qReject'?'reject':'');e.id='s_'+id;e.style.left=x+'px';e.style.top=y+'px';e.innerHTML=id+'<small>'+name+'</small>';d.appendChild(e)});let edges={email:[[166,123,230,123,'local chars'],[326,123,390,123,'@'],[486,123,550,123,'.'],[646,123,710,123,'letters'],[758,171,758,185,'END'],[438,123,438,185,'invalid']],phone:[[166,123,280,123,'phone chars'],[376,123,520,123,'valid end'],[328,123,328,185,'invalid']],ip:[[166,123,280,123,'digit'],[376,123,450,123,'.'],[546,123,620,123,'digit'],[668,123,668,185,'valid'],[490,123,490,185,'invalid']],log:[[166,123,280,123,'timestamp'],[376,123,480,123,'event'],[576,123,680,123,'IP'],[728,171,728,185,'END'],[520,123,520,185,'invalid']]};edges[mode].forEach(a=>edge(d,...a))};
+function edge(d,x1,y1,x2,y2,label){let dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy),line=document.createElement('div');line.className='line';line.style.left=x1+'px';line.style.top=y1+'px';line.style.width=len+'px';line.style.transform=`rotate(${Math.atan2(dy,dx)}rad)`;d.appendChild(line);let t=document.createElement('div');t.className='arrow';t.textContent=label;t.style.left=((x1+x2)/2-30)+'px';t.style.top=((y1+y2)/2-18)+'px';d.appendChild(t)}
+function classify(c){if(/[A-Za-z]/.test(c))return'LETTER';if(/[0-9]/.test(c))return'DIGIT';if(c==='@')return'EMAIL DELIMITER';if(c==='.')return'DOT';if(/[._%+-]/.test(c))return'SPECIAL';if(c==='['||c===']'||c===':'||c===' ')return'LOG SYMBOL';return'OTHER'}
+function resetSim(){pauseRun();idx=0;state='q0';history=[];document.getElementById('simResult').textContent='WAITING';document.getElementById('simResult').className='result muted';document.getElementById('curChar').textContent='—';document.getElementById('curCat').textContent='—';document.getElementById('transition').textContent='q0 → q0';document.getElementById('stepNo').textContent='0 / 0';renderStream();buildDfa();highlightState()}
+function renderStream(){let v=document.getElementById('simInput').value;document.getElementById('stream').innerHTML=[...v].map((c,i)=>`<span class="ch ${i<idx?'ok ':''}${i===idx?'current':''}">${c===' '?'␠':c}</span>`).join('')}
+function step(){let v=document.getElementById('simInput').value;if(idx>=v.length){finish();return}let c=v[idx],prev=state,next='qReject',ex='No valid transition for this character.';if(mode==='email'){if(state==='q0'&&/[A-Za-z0-9._%+-]/.test(c)){next='q1';ex='Character belongs to the local-part character set.'}else if(state==='q1'&&/[A-Za-z0-9._%+-]/.test(c)){next='q1';ex='Repetition: another local-part character is accepted.'}else if(state==='q1'&&c==='@'){next='q2';ex='@ separates the local part from the domain.'}else if(state==='q2'&&/[A-Za-z0-9-]/.test(c)){next='q2';ex='Character is accepted as part of the domain.'}else if(state==='q2'&&c==='.') {next='q3';ex='Dot begins the extension portion.'}else if(state==='q3'&&/[A-Za-z]/.test(c)){next='q4';ex='Alphabetic extension character accepted.'}else if(state==='q4'&&/[A-Za-z]/.test(c)){next='q4';ex='Extension repetition continues.'}}
+else if(mode==='phone'){if(state==='q0'&&/[+0-9]/.test(c)){next='q1';ex='Phone pattern begins.'}else if(state==='q1'&&/[0-9 ()-]/.test(c)){next='q1';ex='Phone character accepted.'}}
+else if(mode==='ip'){if(state==='q0'&&/[0-9]/.test(c)){next='q1';ex='IPv4 begins with an octet.'}else if((state==='q1'||state==='q3')&&/[0-9]/.test(c)){next=state;ex='Digit continues the octet.'}else if(state==='q1'&&c==='.'){next='q2';ex='Dot separates IPv4 octets.'}else if(state==='q2'&&/[0-9]/.test(c)){next='q3';ex='Next octet begins.'}else if(state==='q3'&&c==='.'){next='q2';ex='Dot separates IPv4 octets.'}}
+else {if(state==='q0'&&c==='['){next='q1';ex='Log timestamp begins.'}else if(state==='q1'&&c===']'){next='q2';ex='Timestamp closes; event follows.'}else if(state==='q2'&&c==='f'){next='q3';ex='Simplified log parser advances toward source IP.'}else if(state==='q2'){next='q2';ex='Reading event text.'}else if(state==='q3'){next='q3';ex='Reading source information.'}}
+state=next;idx++;history.push({prev,next,c});document.getElementById('curChar').textContent=c===' ' ? '␠':c;document.getElementById('curCat').textContent=classify(c);document.getElementById('transition').textContent=prev+' → '+next;document.getElementById('stepNo').textContent=idx+' / '+v.length;document.getElementById('explain').textContent=ex;renderStream();highlightState();if(next==='qReject'){document.getElementById('simResult').textContent='✗ REJECTED';document.getElementById('simResult').className='result bad'}if(idx===v.length)finish()}
+function finish(){let v=document.getElementById('simInput').value;let ok=false;if(mode==='email')ok=emailRe.test(v);else if(mode==='phone')ok=/^(?:\+91[- ]?)?[6-9][0-9]{9}$/.test(v.replace(/[- ]/g,''));else if(mode==='ip')ok=validIP(v);else ok=/^\[[^\]]+\]\s+.+\s+from\s+\d{1,3}(?:\.\d{1,3}){3}$/.test(v);document.getElementById('simResult').textContent=ok?'✓ ACCEPTED':'✗ REJECTED';document.getElementById('simResult').className='result '+(ok?'good':'bad');document.getElementById('explain').textContent=ok?'String satisfies the selected educational pattern.':'Final validation failed. Inspect the highlighted processing step.'}
+function highlightState(){document.querySelectorAll('.state').forEach(x=>x.classList.remove('current'));let e=document.getElementById('s_'+state);if(e)e.classList.add('current')}
+function autoRun(){pauseRun();timer=setInterval(()=>{if(idx>=document.getElementById('simInput').value.length){pauseRun();return}step()},700)}
+function pauseRun(){if(timer){clearInterval(timer);timer=null}}
+function validIP(v){let p=v.split('.');return p.length===4&&p.every(x=>/^\d+$/.test(x)&&+x>=0&&+x<=255)}
+function extract(){let text=document.getElementById('rawText').value;let emails=text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g)||[];let phones=text.match(/(?:\+91[- ]?)?[6-9][0-9]{9}/g)||[];let ips=text.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g)||[];document.getElementById('extractResults').innerHTML=[['EMAILS',emails],['PHONES',phones],['IP ADDRESSES',ips]].map(([t,a])=>`<div class="card"><div class="label">${t}</div><div class="value">${a.length}</div>${a.map(x=>`<div class="token">${x}</div>`).join('')||'<span class="muted">None found</span>'}</div>`).join('');let safe=text.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));[...emails,...phones,...ips].sort((a,b)=>b.length-a.length).forEach(x=>{let esc=x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');safe=safe.replace(new RegExp(esc),`<span class="highlight">${x}</span>`)});document.getElementById('highlighted').innerHTML=safe}
+function loadRaw(){document.getElementById('rawText').value='Contact Rahul at rahul.sharma23@gmail.com.\\nCall +91-9876543210.\\nServer: 192.168.1.25.';extract()}
+function analyzeLogs(){
+  const text = document.getElementById('logs').value.trim();
+  const lines = text ? text.split(/\r?\n+/).map(x => x.trim()).filter(Boolean) : [];
+  const events = [];
+  const counts = {};
+
+  for (const line of lines) {
+    // Expected format:
+    // [12:31:04] FAILED LOGIN from 192.168.1.25
+    const m = line.match(/^\[([^\]]+)\]\s+(.+?)\s+from\s+((?:\d{1,3}\.){3}\d{1,3})\s*$/i);
+
+    if (!m) continue;
+
+    const time = m[1];
+    const event = m[2].trim();
+    const ip = m[3];
+    const valid = validIP(ip);
+
+    events.push({time, event, ip, valid});
+
+    if (!counts[ip]) counts[ip] = {failed:0, total:0};
+    counts[ip].total++;
+
+    if (/FAILED\s+LOGIN/i.test(event)) {
+      counts[ip].failed++;
+    }
+  }
+
+  const failed = events.filter(e => /FAILED\s+LOGIN/i.test(e.event)).length;
+  const ips = Object.keys(counts);
+  const suspicious = ips.filter(ip => counts[ip].failed >= 5);
+
+  document.getElementById('stats').innerHTML = [
+    ['TOTAL EVENTS', events.length],
+    ['FAILED LOGINS', failed],
+    ['UNIQUE IPs', ips.length],
+    ['SUSPICIOUS IPs', suspicious.length]
+  ].map(([label,value]) =>
+    `<div class="stat"><b>${value}</b><span>${label}</span></div>`
+  ).join('');
+
+  const alerts = document.getElementById('alerts');
+
+  if (suspicious.length) {
+    alerts.innerHTML = suspicious.map(ip =>
+      `<div class="alert">🔴 <b>SUSPICIOUS ACTIVITY DETECTED</b><br>
+      ${ip} has ${counts[ip].failed} failed login attempts.
+      <span class="muted">Demonstration rule: ≥ 5 failures from one IP.</span></div>`
+    ).join('');
+  } else {
+    alerts.innerHTML =
+      `<div class="status"><span class="good">✓ No suspicious activity detected.</span><br>
+      <span class="muted">No IP reached the 5-failed-login demonstration threshold.</span></div>`;
+  }
+
+  const parsed = document.getElementById('parsed');
+
+  if (events.length) {
+    parsed.innerHTML = events.map(e =>
+      `<div class="status" style="margin:6px 0">
+        <b>${e.time}</b> — ${e.event} —
+        <span class="${e.valid ? 'good' : 'bad'}">${e.ip}</span>
+        ${e.valid ? ' ✓ valid IPv4' : ' ✗ invalid IPv4'}
+      </div>`
+    ).join('');
+  } else {
+    parsed.innerHTML =
+      `<div class="status"><span class="bad">✗ No valid log records found.</span><br>
+      <span class="muted">Use: [time] EVENT from IPv4</span></div>`;
+  }
+}
+
+function loadLogs(){
+  document.getElementById('logs').value=`[12:31:04] FAILED LOGIN from 192.168.1.25
+[12:31:09] FAILED LOGIN from 192.168.1.25
+[12:31:12] SUCCESS LOGIN from 192.168.1.25
+[12:32:01] FAILED LOGIN from 10.0.0.8
+[12:32:05] FAILED LOGIN from 10.0.0.8
+[12:32:07] FAILED LOGIN from 10.0.0.8
+[12:32:09] FAILED LOGIN from 10.0.0.8
+[12:32:11] FAILED LOGIN from 10.0.0.8`;
+  analyzeLogs();
+}
+
+/* Suspicious URL Detection */
+let urlKeywords=[],urlDFAData=null,urlPos=0,urlState=0,urlTimer=null,urlMatched=new Set();
+
+function normalizeURLKeyword(v){return v.trim().toLowerCase().replace(/\s+/g,'');}
+function addURLKeyword(){
+ const input=document.getElementById('urlKeywordInput'),word=normalizeURLKeyword(input.value);
+ if(!word){document.getElementById('urlDFAStatus').innerHTML='<span class="bad">Enter a keyword first.</span>';return;}
+ if(!/^[a-z0-9._%+\-]+$/.test(word)){document.getElementById('urlDFAStatus').innerHTML='<span class="bad">Use letters, digits and simple URL symbols only.</span>';return;}
+ if(!urlKeywords.includes(word))urlKeywords.push(word);
+ input.value='';renderURLKeywords();document.getElementById('urlDFAStatus').innerHTML='<span class="good">✓ Added keyword:</span> '+word;
+}
+function removeURLKeyword(word){urlKeywords=urlKeywords.filter(x=>x!==word);renderURLKeywords();urlDFAData=null;document.getElementById('urlDFASection').classList.add('hide');document.getElementById('urlCheckSection').classList.add('hide');document.getElementById('urlDFAStatus').textContent='Keywords changed. Generate the DFA again.';}
+function renderURLKeywords(){document.getElementById('urlKeywords').innerHTML=urlKeywords.length?urlKeywords.map(w=>`<span class="token">${w} <button style="background:none;border:0;color:#ff7185" onclick="removeURLKeyword('${w}')">×</button></span>`).join(''):'<span class="muted">No keywords added.</span>';}
+function clearURLKeywords(){urlPauseRun();urlKeywords=[];urlDFAData=null;renderURLKeywords();document.getElementById('urlDFASection').classList.add('hide');document.getElementById('urlCheckSection').classList.add('hide');document.getElementById('urlDFAStatus').textContent='Add at least one keyword and click Generate DFA.';}
+function loadURLKeywords(){urlKeywords=['login','verify','password','account','bank'];renderURLKeywords();generateURLDFA();document.getElementById('urlInput').value='https://secure-example.com/login?verify=password';resetURLExecution();}
+function buildCombinedDFA(keywords){
+ const nodes=[{next:{},fail:0,out:[]}];
+ for(const word of keywords){let cur=0;for(const ch of word){if(nodes[cur].next[ch]===undefined){nodes[cur].next[ch]=nodes.length;nodes.push({next:{},fail:0,out:[]});}cur=nodes[cur].next[ch];}if(!nodes[cur].out.includes(word))nodes[cur].out.push(word);}
+ const q=[];for(const ch of Object.keys(nodes[0].next)){const child=nodes[0].next[ch];nodes[child].fail=0;q.push(child);}
+ while(q.length){const r=q.shift();for(const ch of Object.keys(nodes[r].next)){const u=nodes[r].next[ch];q.push(u);let f=nodes[r].fail;while(f!==0&&nodes[f].next[ch]===undefined)f=nodes[f].fail;if(nodes[f].next[ch]!==undefined&&nodes[f].next[ch]!==u)nodes[u].fail=nodes[f].next[ch];else nodes[u].fail=0;nodes[u].out=[...new Set(nodes[u].out.concat(nodes[nodes[u].fail].out))];}}
+ const alphabet=new Set();nodes.forEach(n=>Object.keys(n.next).forEach(c=>alphabet.add(c)));
+ for(let i=0;i<nodes.length;i++){nodes[i].trans={};for(const ch of alphabet){if(nodes[i].next[ch]!==undefined)nodes[i].trans[ch]=nodes[i].next[ch];else if(i===0)nodes[i].trans[ch]=0;else nodes[i].trans[ch]=nodes[nodes[i].fail].trans[ch]??0;}}
+ return {nodes,alphabet:[...alphabet]};
+}
+function generateURLDFA(){
+ urlPauseRun();if(!urlKeywords.length){document.getElementById('urlDFAStatus').innerHTML='<span class="bad">Add at least one keyword before generating the DFA.</span>';return;}
+ urlDFAData=buildCombinedDFA(urlKeywords);document.getElementById('urlDFASection').classList.remove('hide');document.getElementById('urlCheckSection').classList.remove('hide');renderURLDFA();resetURLExecution();
+ document.getElementById('urlDFAStatus').innerHTML='<span class="good">✓ DFA generated.</span> '+urlDFAData.nodes.length+' states, detecting '+urlKeywords.length+' keywords.';
+ document.getElementById('urlDFASummary').innerHTML='<b>Keywords:</b> '+urlKeywords.map(x=>`<span class="token">${x}</span>`).join('');
+}
+function renderURLDFA(){
+ const d=document.getElementById('urlDFA');d.innerHTML='';const nodes=urlDFAData.nodes,max=Math.min(nodes.length,24),cols=6,positions={};
+ for(let i=0;i<max;i++){const col=i%cols,row=Math.floor(i/cols),x=25+col*145,y=35+row*105;positions[i]={x,y};const e=document.createElement('div');e.id='urlNode_'+i;e.className='url-node '+(nodes[i].out.length?'accept':'');e.style.left=x+'px';e.style.top=y+'px';e.innerHTML=`q${i}<small>${nodes[i].out.length?nodes[i].out.join(', '):(i===0?'START':'prefix')}</small>`;d.appendChild(e);}
+ for(let i=0;i<max;i++)for(const [ch,to] of Object.entries(nodes[i].next)){if(to>=max||!positions[to])continue;const a=positions[i],b=positions[to];drawURLEdge(d,a.x+78,a.y+27,b.x,b.y+27,ch);}
+ d.style.minHeight=Math.max(330,Math.ceil(max/cols)*105+80)+'px';
+}
+function drawURLEdge(d,x1,y1,x2,y2,label){const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy),line=document.createElement('div');line.className='url-edge';line.style.left=x1+'px';line.style.top=y1+'px';line.style.width=len+'px';line.style.transform=`rotate(${Math.atan2(dy,dx)}rad)`;d.appendChild(line);const t=document.createElement('div');t.className='url-edge-label';t.textContent=label;t.style.left=((x1+x2)/2-5)+'px';t.style.top=((y1+y2)/2-13)+'px';d.appendChild(t);}
+function resetURLExecution(){urlPauseRun();urlPos=0;urlState=0;urlMatched=new Set();const value=document.getElementById('urlInput').value;document.getElementById('urlCurrentChar').textContent='—';document.getElementById('urlCurrentState').textContent='q0';document.getElementById('urlStep').textContent=`0 / ${value.length}`;document.getElementById('urlExecution').textContent='Press Step or Check URL to execute the generated DFA.';document.getElementById('urlResult').textContent='WAITING';document.getElementById('urlResult').className='result muted';renderURLStream();highlightURLState();}
+function renderURLStream(){const value=document.getElementById('urlInput').value;document.getElementById('urlStream').innerHTML=[...value].map((c,i)=>`<span class="ch ${i<urlPos?'ok ':''}${i===urlPos?'current':''}">${c===' '?'␠':c}</span>`).join('');}
+function highlightURLState(){document.querySelectorAll('.url-node').forEach(x=>x.classList.remove('active'));const e=document.getElementById('urlNode_'+urlState);if(e)e.classList.add('active');}
+function urlStepOnce(){
+ if(!urlDFAData){document.getElementById('urlExecution').innerHTML='<span class="bad">Generate a DFA first.</span>';return;}
+ const value=document.getElementById('urlInput').value.toLowerCase();if(urlPos>=value.length){finishURLCheck();return;}
+ const c=value[urlPos],prev=urlState,next=urlDFAData.nodes[urlState].trans[c]??0;urlState=next;urlPos++;
+ const found=urlDFAData.nodes[next].out;found.forEach(w=>urlMatched.add(w));
+ document.getElementById('urlCurrentChar').textContent=c===' '?'␠':c;document.getElementById('urlCurrentState').textContent=`q${urlState}`;document.getElementById('urlStep').textContent=`${urlPos} / ${value.length}`;
+ document.getElementById('urlExecution').innerHTML=found.length?`<span class="bad">⚠ Keyword detected:</span> ${found.map(w=>`<span class="token">${w}</span>`).join('')}<br>Transition: q${prev} → q${next}`:`Character "${c}" processed: q${prev} → q${next}. No keyword completed at this step.`;
+ renderURLStream();highlightURLState();if(urlPos===value.length)finishURLCheck();
+}
+function finishURLCheck(){const matches=[...urlMatched];if(matches.length){document.getElementById('urlResult').innerHTML=`⚠ SUSPICIOUS<br><span style="font-size:14px;font-weight:500">Matched keyword${matches.length>1?'s':''}: ${matches.map(w=>`<span class="token">${w}</span>`).join(' ')}</span>`;document.getElementById('urlResult').className='result bad';}else{document.getElementById('urlResult').innerHTML=`✓ SAFE<br><span style="font-size:14px;font-weight:500">No suspicious keyword found.</span>`;document.getElementById('urlResult').className='result good';}}
+function checkSuspiciousURL(){resetURLExecution();if(!document.getElementById('urlInput').value.trim()){document.getElementById('urlExecution').innerHTML='<span class="bad">Enter a URL first.</span>';return;}urlAutoRun();}
+function urlAutoRun(){urlPauseRun();if(!urlDFAData)return;urlTimer=setInterval(()=>{if(urlPos>=document.getElementById('urlInput').value.length){urlPauseRun();finishURLCheck();return;}urlStepOnce();},350);}
+function urlPauseRun(){if(urlTimer){clearInterval(urlTimer);urlTimer=null;}}
+function init(){buildDfa();renderStream();resetSim();loadLogs();loadRaw();renderURLKeywords();}
+init();
+</script>
+</body>
+</html>
